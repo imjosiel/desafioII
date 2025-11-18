@@ -12,6 +12,10 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
+/**
+ * Endpoints de produto/serviço: CRUD com validações e paginação.
+ * A exclusão é delegada ao serviço para validar associação a pedidos.
+ */
 @RestController
 @RequestMapping("/produtos-servicos")
 public class ProdutoServicoController {
@@ -23,6 +27,11 @@ public class ProdutoServicoController {
         this.service = service;
     }
 
+    /**
+     * Cria produto/serviço com validações.
+     * @param dto nome, preco>=0, tipo, ativo
+     * @return recurso criado
+     */
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public ProdutoServico create(@RequestBody @Valid ProdutoServicoDTO dto) {
@@ -34,16 +43,32 @@ public class ProdutoServicoController {
         return repository.save(ps);
     }
 
+    /**
+     * Lista produtos/serviços com paginação.
+     * @param pageable parâmetros de paginação
+     * @return página de recursos
+     */
     @GetMapping
     public Page<ProdutoServico> list(Pageable pageable) {
         return repository.findAll(pageable);
     }
 
+    /**
+     * Detalha produto/serviço por ID.
+     * @param id UUID
+     * @return recurso encontrado
+     */
     @GetMapping("/{id}")
     public ProdutoServico get(@PathVariable UUID id) {
         return repository.findById(id).orElseThrow();
     }
 
+    /**
+     * Atualiza produto/serviço.
+     * @param id UUID do recurso
+     * @param dto dados atualizados
+     * @return recurso atualizado
+     */
     @PutMapping("/{id}")
     public ProdutoServico update(@PathVariable UUID id, @RequestBody @Valid ProdutoServicoDTO dto) {
         ProdutoServico ps = repository.findById(id).orElseThrow();
@@ -54,6 +79,11 @@ public class ProdutoServicoController {
         return repository.save(ps);
     }
 
+    /**
+     * Exclui produto/serviço pelo ID.
+     * Bloqueado se estiver associado a algum pedido.
+     * @param id UUID
+     */
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable UUID id) {

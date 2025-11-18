@@ -8,6 +8,9 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import java.util.NoSuchElementException;
 import java.util.Map;
 
+/**
+ * Tratamento global de exceções da API, mapeando regras para HTTP adequados.
+ */
 @ControllerAdvice
 public class ApiExceptionHandler {
     @ExceptionHandler(IllegalArgumentException.class)

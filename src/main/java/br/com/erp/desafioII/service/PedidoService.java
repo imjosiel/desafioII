@@ -11,6 +11,13 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.UUID;
 
+/**
+ * Regras de negócio de Pedido:
+ * - Itens: adicionar, remover, atualizar quantidade
+ * - Desconto: aplicado apenas a produtos e somente com pedido ABERTO
+ * - Totais: produtos, serviços e total com desconto
+ * - Fechamento: bloqueia alterações
+ */
 @Service
 public class PedidoService {
     private final PedidoRepository pedidoRepository;
@@ -23,11 +30,22 @@ public class PedidoService {
         this.itemPedidoRepository = itemPedidoRepository;
     }
 
+    /**
+     * Cria um novo pedido em situação ABERTO com desconto 0.
+     */
     @Transactional
     public Pedido criar() {
         return pedidoRepository.save(new Pedido());
     }
 
+    /**
+     * Adiciona um item ao pedido.
+     * Bloqueia se o pedido estiver FECHADO ou se o produto estiver desativado.
+     * @param pedidoId UUID do pedido
+     * @param produtoServicoId UUID de produto/serviço
+     * @param quantidade quantidade (>=1)
+     * @return pedido atualizado
+     */
     @Transactional
     public Pedido adicionarItem(UUID pedidoId, UUID produtoServicoId, int quantidade) {
         Pedido pedido = pedidoRepository.findById(pedidoId).orElseThrow();
@@ -47,6 +65,12 @@ public class PedidoService {
         return pedidoRepository.save(pedido);
     }
 
+    /**
+     * Remove um item do pedido por ID.
+     * @param pedidoId UUID do pedido
+     * @param itemId UUID do item
+     * @return pedido atualizado
+     */
     @Transactional
     public Pedido removerItem(UUID pedidoId, UUID itemId) {
         Pedido pedido = pedidoRepository.findById(pedidoId).orElseThrow();
@@ -54,6 +78,14 @@ public class PedidoService {
         return pedidoRepository.save(pedido);
     }
 
+    /**
+     * Atualiza a quantidade de um item.
+     * Bloqueia se o pedido estiver FECHADO.
+     * @param pedidoId UUID do pedido
+     * @param itemId UUID do item
+     * @param quantidade nova quantidade (>=1)
+     * @return pedido atualizado
+     */
     @Transactional
     public Pedido atualizarQuantidadeItem(UUID pedidoId, UUID itemId, int quantidade) {
         Pedido pedido = pedidoRepository.findById(pedidoId).orElseThrow();
@@ -69,6 +101,11 @@ public class PedidoService {
         return pedidoRepository.save(pedido);
     }
 
+    /**
+     * Define o percentual de desconto do pedido.
+     * Apenas permitido se o pedido estiver ABERTO e percentual >= 0.
+     * O desconto incide somente sobre produtos no cálculo final.
+     */
     @Transactional
     public Pedido aplicarDesconto(UUID pedidoId, BigDecimal percentual) {
         Pedido pedido = pedidoRepository.findById(pedidoId).orElseThrow();
@@ -82,6 +119,9 @@ public class PedidoService {
         return pedidoRepository.save(pedido);
     }
 
+    /**
+     * Soma o total de itens do tipo PRODUTO.
+     */
     public BigDecimal totalProdutos(Pedido pedido) {
         return pedido.getItens().stream()
                 .filter(i -> i.getProdutoServico().getTipo() == TipoItem.PRODUTO)
@@ -89,6 +129,9 @@ public class PedidoService {
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
+    /**
+     * Soma o total de itens do tipo SERVICO.
+     */
     public BigDecimal totalServicos(Pedido pedido) {
         return pedido.getItens().stream()
                 .filter(i -> i.getProdutoServico().getTipo() == TipoItem.SERVICO)
@@ -96,6 +139,9 @@ public class PedidoService {
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
+    /**
+     * Total combinado: serviços (sem desconto) + produtos com desconto aplicado.
+     */
     public BigDecimal totalComDesconto(Pedido pedido) {
         BigDecimal produtos = totalProdutos(pedido);
         BigDecimal servicos = totalServicos(pedido);
@@ -104,10 +150,22 @@ public class PedidoService {
         return produtosComDesconto.add(servicos);
     }
 
+    /**
+     * Fecha o pedido (situação FECHADO), bloqueando alterações futuras.
+     */
     @Transactional
     public Pedido fechar(UUID pedidoId) {
         Pedido pedido = pedidoRepository.findById(pedidoId).orElseThrow();
         pedido.setSituacao(SituacaoPedido.FECHADO);
         return pedidoRepository.save(pedido);
+    }
+
+    /**
+     * Exclui o pedido por ID.
+     * Itens são removidos devido ao cascade/orphanRemoval.
+     */
+    @Transactional
+    public void deletar(UUID pedidoId) {
+        pedidoRepository.deleteById(pedidoId);
     }
 }

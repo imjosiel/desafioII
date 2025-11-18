@@ -8,6 +8,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * Entidade Pedido.
+ * Mantém situação (ABERTO/FECHADO), percentual de desconto e itens associados.
+ */
 @Entity
 public class Pedido {
     @Id

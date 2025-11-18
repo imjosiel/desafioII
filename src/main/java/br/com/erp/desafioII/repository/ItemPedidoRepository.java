@@ -5,6 +5,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.UUID;
 
+/**
+ * Repositório JPA para ItemPedido.
+ */
 public interface ItemPedidoRepository extends JpaRepository<ItemPedido, UUID> {
     boolean existsByProdutoServico_Id(UUID produtoServicoId);
 }

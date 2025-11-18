@@ -1,48 +1,50 @@
 param(
-  [string]$DbUrl,
-  [string]$DbUser,
-  [string]$DbPass,
-  [int]$Port = 8080
+  [string]$EnvFile = ".env",
+  [string]$BaseUrl = "http://localhost:8080"
 )
 
-$env:DB_URL = $DbUrl
-$env:DB_USER = $DbUser
-$env:DB_PASSWORD = $DbPass
-
-$root = Resolve-Path (Join-Path (Split-Path -Parent $MyInvocation.MyCommand.Path) "..")
-
-Start-Process -FilePath "java" -ArgumentList "-jar","target\desafioII-0.0.1-SNAPSHOT.jar" -WorkingDirectory $root -WindowStyle Minimized | Out-Null
-Start-Sleep -Seconds 12
-
-$base = "http://localhost:$Port"
-
-$prodBody = @{ nome = 'Notebook'; preco = 3000; tipo = 'PRODUTO'; ativo = $true } | ConvertTo-Json
-$prod = Invoke-RestMethod -Method Post -Uri "$base/produtos-servicos" -ContentType 'application/json' -Body $prodBody
-
-$servBody = @{ nome = 'Suporte'; preco = 200; tipo = 'SERVICO'; ativo = $true } | ConvertTo-Json
-$serv = Invoke-RestMethod -Method Post -Uri "$base/produtos-servicos" -ContentType 'application/json' -Body $servBody
-
-$pedido = Invoke-RestMethod -Method Post -Uri "$base/pedidos"
-
-$add1Body = @{ produtoServicoId = $prod.id; quantidade = 1 } | ConvertTo-Json
-Invoke-RestMethod -Method Post -Uri "$base/pedidos/$($pedido.id)/itens" -ContentType 'application/json' -Body $add1Body | Out-Null
-
-$add2Body = @{ produtoServicoId = $serv.id; quantidade = 2 } | ConvertTo-Json
-Invoke-RestMethod -Method Post -Uri "$base/pedidos/$($pedido.id)/itens" -ContentType 'application/json' -Body $add2Body | Out-Null
-
-Invoke-RestMethod -Method Post -Uri "$base/pedidos/$($pedido.id)/desconto?percentual=10" | Out-Null
-
-$view = Invoke-RestMethod -Method Get -Uri "$base/pedidos/$($pedido.id)"
-
-$out = [PSCustomObject]@{
-  pedido = $pedido.id
-  produto = $prod.id
-  servico = $serv.id
-  totalComDesconto = $view.totalComDesconto
-  totalProdutos = $view.totalProdutos
-  totalServicos = $view.totalServicos
+Write-Host "[SMOKE] Carregando variáveis de $EnvFile" -ForegroundColor Cyan
+Get-Content $EnvFile | ForEach-Object {
+  $kv = $_ -split '=',2
+  if ($kv.Length -eq 2) { Set-Item -Path Env:\$($kv[0]) -Value $kv[1] }
 }
 
-$outPath = Join-Path (Resolve-Path "..") "curls para teste\smoke_output.json"
-$out | ConvertTo-Json -Depth 6 | Out-File -FilePath $outPath -Encoding utf8
-Write-Output $outPath
+Write-Host "[SMOKE] Build do jar" -ForegroundColor Cyan
+mvn -q -DskipTests package
+
+$jar = Join-Path $PSScriptRoot "..\target\desafioII-0.0.1-SNAPSHOT.jar"
+if (!(Test-Path $jar)) { throw "Jar não encontrado em $jar" }
+
+Write-Host "[SMOKE] Iniciando aplicação" -ForegroundColor Cyan
+$proc = Start-Process -FilePath "java" -ArgumentList "-jar `"$jar`"" -PassThru -NoNewWindow
+
+try {
+  $healthUrl = "$BaseUrl/actuator/health"
+  $deadline = (Get-Date).AddMinutes(2)
+  do {
+    Start-Sleep -Seconds 2
+    try {
+      $health = Invoke-RestMethod -Method Get -Uri $healthUrl -TimeoutSec 5
+      if ($health.status -eq "UP") { break }
+    } catch {}
+  } while ((Get-Date) -lt $deadline)
+
+  Write-Host "[SMOKE] Criando catálogo" -ForegroundColor Cyan
+  $prodDto = @{ nome = 'Notebook'; preco = 3000; tipo = 'PRODUTO'; ativo = $true } | ConvertTo-Json
+  $prod = Invoke-RestMethod -Method Post -Uri "$BaseUrl/produtos-servicos" -Body $prodDto -ContentType 'application/json'
+  $servDto = @{ nome = 'Suporte'; preco = 200; tipo = 'SERVICO'; ativo = $true } | ConvertTo-Json
+  $serv = Invoke-RestMethod -Method Post -Uri "$BaseUrl/produtos-servicos" -Body $servDto -ContentType 'application/json'
+
+  Write-Host "[SMOKE] Criando pedido e itens" -ForegroundColor Cyan
+  $pedido = Invoke-RestMethod -Method Post -Uri "$BaseUrl/pedidos"
+  Invoke-RestMethod -Method Post -Uri "$BaseUrl/pedidos/$($pedido.id)/itens" -Body (@{ produtoServicoId = $prod.id; quantidade = 1 } | ConvertTo-Json) -ContentType 'application/json'
+  Invoke-RestMethod -Method Post -Uri "$BaseUrl/pedidos/$($pedido.id)/itens" -Body (@{ produtoServicoId = $serv.id; quantidade = 2 } | ConvertTo-Json) -ContentType 'application/json'
+
+  Write-Host "[SMOKE] Aplicando desconto" -ForegroundColor Cyan
+  Invoke-RestMethod -Method Post -Uri "$BaseUrl/pedidos/$($pedido.id)/desconto?percentual=10"
+
+  $view = Invoke-RestMethod -Method Get -Uri "$BaseUrl/pedidos/$($pedido.id)"
+  Write-Host ("[RESULT] Pedido=$($view.id) Produtos=$($view.totalProdutos) Servicos=$($view.totalServicos) Desconto=$($view.descontoPercentual) TotalComDesconto=$($view.totalComDesconto)") -ForegroundColor Green
+} finally {
+  if ($proc -and !$proc.HasExited) { Write-Host "[SMOKE] Encerrando aplicação" -ForegroundColor Cyan; $proc.Kill() }
+}

@@ -7,6 +7,10 @@ import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.util.UUID;
 
+/**
+ * Entidade Produto/Serviço.
+ * Representa catálogo com diferenciação por tipo (PRODUTO/SERVICO), preço e flag de ativação.
+ */
 @Entity
 public class ProdutoServico {
     @Id

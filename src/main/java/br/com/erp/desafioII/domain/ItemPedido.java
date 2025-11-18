@@ -8,6 +8,10 @@ import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.util.UUID;
 
+/**
+ * Entidade ItemPedido.
+ * Relaciona um pedido a um produto/serviço, com quantidade e preço unitário.
+ */
 @Entity
 public class ItemPedido {
     @Id

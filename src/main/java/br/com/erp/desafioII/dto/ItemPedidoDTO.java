@@ -5,6 +5,9 @@ import jakarta.validation.constraints.NotNull;
 
 import java.util.UUID;
 
+/**
+ * DTO de entrada para adicionar item ao pedido.
+ */
 public record ItemPedidoDTO(
         @NotNull UUID produtoServicoId,
         @Min(1) int quantidade

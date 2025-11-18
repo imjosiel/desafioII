@@ -10,6 +10,10 @@ import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
 import javax.sql.DataSource;
 
+/**
+ * Configuração de DataSource com prioridade.
+ * Usa variáveis de ambiente para Postgres externo, com fallback para Postgres embarcado.
+ */
 @Configuration
 public class EmbeddedPostgresConfig {
     private EmbeddedPostgres pg;

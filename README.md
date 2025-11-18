@@ -26,9 +26,9 @@
 ### Neon DB (exemplo)
 - Em PowerShell (Windows):
 ```
-$env:DB_URL="jdbc:postgresql://ep-hidden-dust-ahk703uz-pooler.c-3.us-east-1.aws.neon.tech/neondb_2?sslmode=require"
-$env:DB_USER="neondb_owner"
-$env:DB_PASSWORD="npg_oPpd0A7mxOyn"
+$env:DB_URL="jdbc:postgresql://<host>/<database>?sslmode=require"
+$env:DB_USER="<usuario>"
+$env:DB_PASSWORD="<senha>"
 ```
 - Observação: não use `channel_binding=require` em JDBC.
 
@@ -98,8 +98,15 @@ java -jar target/desafioII-0.0.1-SNAPSHOT.jar
 }
 ```
 6. Aplicar desconto: `POST /pedidos/{pedidoId}/desconto?percentual=10`
-7. Detalhar pedido: `GET /pedidos/{pedidoId}` (confira `totalProdutos`, `totalServicos`, `totalComDesconto`)
-8. Fechar pedido: `POST /pedidos/{pedidoId}/fechar`
+7. Alternativamente, atualizar desconto via PUT: `PUT /pedidos/{pedidoId}` body:
+```
+{
+  "descontoPercentual": 10
+}
+```
+8. Detalhar pedido: `GET /pedidos/{pedidoId}` (confira `totalProdutos`, `totalServicos`, `totalComDesconto`)
+9. Fechar pedido: `POST /pedidos/{pedidoId}/fechar`
+10. (Opcional) Excluir pedido: `DELETE /pedidos/{pedidoId}`
 
 ## Exemplo de Resposta (Neon)
 ```
@@ -156,8 +163,10 @@ Observação: o desconto de 10% incide somente sobre `totalProdutos` (3000 → 2
   - `POST /pedidos`
   - `GET /pedidos?size=10&page=0`
   - `GET /pedidos/{id}` (retorna totais, desconto e itens)
+  - `PUT /pedidos/{id}` (atualiza `descontoPercentual`)
   - `POST /pedidos/{id}/desconto?percentual=10` (somente em `ABERTO`)
   - `POST /pedidos/{id}/fechar`
+  - `DELETE /pedidos/{id}`
 - Itens de Pedido
   - `POST /pedidos/{id}/itens` (adiciona)
   - `PUT /pedidos/{id}/itens/{itemId}` (atualiza quantidade)

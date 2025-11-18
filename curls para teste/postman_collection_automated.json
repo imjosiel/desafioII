@@ -1,0 +1,107 @@
+{
+  "info": {
+    "name": "Desafio II (Automated)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Criar Produto",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "url": { "raw": "{{base_url}}/produtos-servicos", "host": ["{{base_url}}"], "path": ["produtos-servicos"] },
+        "body": { "mode": "raw", "raw": "{\n  \"nome\": \"Notebook\",\n  \"preco\": 3000,\n  \"tipo\": \"PRODUTO\",\n  \"ativo\": true\n}" }
+      },
+      "event": [
+        { "listen": "test", "script": { "exec": [
+          "var jsonData = pm.response.json();",
+          "if (jsonData && jsonData.id) { pm.collectionVariables.set('produto_id', jsonData.id); }"
+        ] } }
+      ]
+    },
+    {
+      "name": "Criar Serviço",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "url": { "raw": "{{base_url}}/produtos-servicos", "host": ["{{base_url}}"], "path": ["produtos-servicos"] },
+        "body": { "mode": "raw", "raw": "{\n  \"nome\": \"Suporte\",\n  \"preco\": 200,\n  \"tipo\": \"SERVICO\",\n  \"ativo\": true\n}" }
+      },
+      "event": [
+        { "listen": "test", "script": { "exec": [
+          "var jsonData = pm.response.json();",
+          "if (jsonData && jsonData.id) { pm.collectionVariables.set('servico_id', jsonData.id); }"
+        ] } }
+      ]
+    },
+    { "name": "Listar Produtos", "request": { "method": "GET", "url": { "raw": "{{base_url}}/produtos-servicos?size=10&page=0", "host": ["{{base_url}}"], "path": ["produtos-servicos"], "query": [{"key":"size","value":"10"},{"key":"page","value":"0"}] } } },
+    { "name": "Detalhar Produto", "request": { "method": "GET", "url": { "raw": "{{base_url}}/produtos-servicos/{{produto_id}}", "host": ["{{base_url}}"], "path": ["produtos-servicos","{{produto_id}}"] } } },
+    {
+      "name": "Atualizar Produto",
+      "request": {
+        "method": "PUT",
+        "header": [ { "key": "Content-Type", "value": "application/json" } ],
+        "url": { "raw": "{{base_url}}/produtos-servicos/{{produto_id}}", "host": ["{{base_url}}"], "path": ["produtos-servicos","{{produto_id}}"] },
+        "body": { "mode": "raw", "raw": "{\n  \"nome\": \"Notebook Pro\",\n  \"preco\": 3200,\n  \"tipo\": \"PRODUTO\",\n  \"ativo\": true\n}" }
+      }
+    },
+    { "name": "Excluir Produto", "request": { "method": "DELETE", "url": { "raw": "{{base_url}}/produtos-servicos/{{produto_id}}", "host": ["{{base_url}}"], "path": ["produtos-servicos","{{produto_id}}"] } } },
+
+    { "name": "Criar Pedido", "request": { "method": "POST", "url": { "raw": "{{base_url}}/pedidos", "host": ["{{base_url}}"], "path": ["pedidos"] } },
+      "event": [
+        { "listen": "test", "script": { "exec": [
+          "var jsonData = pm.response.json();",
+          "if (jsonData && jsonData.id) { pm.collectionVariables.set('pedido_id', jsonData.id); }"
+        ] } }
+      ] },
+    { "name": "Listar Pedidos", "request": { "method": "GET", "url": { "raw": "{{base_url}}/pedidos?size=10&page=0", "host": ["{{base_url}}"], "path": ["pedidos"], "query": [{"key":"size","value":"10"},{"key":"page","value":"0"}] } } },
+    { "name": "Detalhar Pedido", "request": { "method": "GET", "url": { "raw": "{{base_url}}/pedidos/{{pedido_id}}", "host": ["{{base_url}}"], "path": ["pedidos","{{pedido_id}}"] } },
+      "event": [
+        { "listen": "test", "script": { "exec": [
+          "var j = pm.response.json();",
+          "if (j && j.itens && j.itens.length) { pm.collectionVariables.set('item_id', j.itens[0].id); }"
+        ] } }
+      ] },
+    {
+      "name": "Adicionar Item (Produto)",
+      "request": {
+        "method": "POST",
+        "header": [ { "key": "Content-Type", "value": "application/json" } ],
+        "url": { "raw": "{{base_url}}/pedidos/{{pedido_id}}/itens", "host": ["{{base_url}}"], "path": ["pedidos","{{pedido_id}}","itens"] },
+        "body": { "mode": "raw", "raw": "{\n  \"produtoServicoId\": \"{{produto_id}}\",\n  \"quantidade\": 1\n}" }
+      }
+    },
+    {
+      "name": "Adicionar Item (Serviço)",
+      "request": {
+        "method": "POST",
+        "header": [ { "key": "Content-Type", "value": "application/json" } ],
+        "url": { "raw": "{{base_url}}/pedidos/{{pedido_id}}/itens", "host": ["{{base_url}}"], "path": ["pedidos","{{pedido_id}}","itens"] },
+        "body": { "mode": "raw", "raw": "{\n  \"produtoServicoId\": \"{{servico_id}}\",\n  \"quantidade\": 2\n}" }
+      }
+    },
+    {
+      "name": "Atualizar Item",
+      "request": {
+        "method": "PUT",
+        "header": [ { "key": "Content-Type", "value": "application/json" } ],
+        "url": { "raw": "{{base_url}}/pedidos/{{pedido_id}}/itens/{{item_id}}", "host": ["{{base_url}}"], "path": ["pedidos","{{pedido_id}}","itens","{{item_id}}"] },
+        "body": { "mode": "raw", "raw": "{\n  \"quantidade\": 2\n}" }
+      }
+    },
+    { "name": "Remover Item", "request": { "method": "DELETE", "url": { "raw": "{{base_url}}/pedidos/{{pedido_id}}/itens/{{item_id}}", "host": ["{{base_url}}"], "path": ["pedidos","{{pedido_id}}","itens","{{item_id}}"] } } },
+    { "name": "Aplicar Desconto", "request": { "method": "POST", "url": { "raw": "{{base_url}}/pedidos/{{pedido_id}}/desconto?percentual=10", "host": ["{{base_url}}"], "path": ["pedidos","{{pedido_id}}","desconto"], "query":[{"key":"percentual","value":"10"}] } } },
+    { "name": "Fechar Pedido", "request": { "method": "POST", "url": { "raw": "{{base_url}}/pedidos/{{pedido_id}}/fechar", "host": ["{{base_url}}"], "path": ["pedidos","{{pedido_id}}","fechar"] } } }
+  ],
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:8080" },
+    { "key": "produto_id", "value": "" },
+    { "key": "servico_id", "value": "" },
+    { "key": "pedido_id", "value": "" },
+    { "key": "item_id", "value": "" }
+  ]
+}

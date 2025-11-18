@@ -1,0 +1,160 @@
+{
+  "_type": "export",
+  "__export_format": 4,
+  "__export_date": "2025-11-17T22:39:00.000Z",
+  "__export_source": "insomnia.desktop.app:v2025",
+  "resources": [
+    {
+      "_id": "wrk_desafioii",
+      "_type": "workspace",
+      "name": "Desafio II",
+      "description": "Workspace para testar API"
+    },
+    {
+      "_id": "env_desafioii_base",
+      "_type": "environment",
+      "parentId": "wrk_desafioii",
+      "name": "Base",
+      "data": {
+        "base_url": "http://localhost:8080",
+        "produto_id": "",
+        "pedido_id": "",
+        "item_id": ""
+      }
+    },
+
+    {
+      "_id": "req_criar_produto",
+      "_type": "request",
+      "parentId": "wrk_desafioii",
+      "name": "POST /produtos-servicos (Produto)",
+      "method": "POST",
+      "url": "{{ base_url }}/produtos-servicos",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"nome\": \"Notebook\",\n  \"preco\": 3000,\n  \"tipo\": \"PRODUTO\",\n  \"ativo\": true\n}"
+      }
+    },
+    {
+      "_id": "req_criar_servico",
+      "_type": "request",
+      "parentId": "wrk_desafioii",
+      "name": "POST /produtos-servicos (Serviço)",
+      "method": "POST",
+      "url": "{{ base_url }}/produtos-servicos",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"nome\": \"Suporte\",\n  \"preco\": 200,\n  \"tipo\": \"SERVICO\",\n  \"ativo\": true\n}"
+      }
+    },
+    {
+      "_id": "req_listar_produtos",
+      "_type": "request",
+      "parentId": "wrk_desafioii",
+      "name": "GET /produtos-servicos?size=10&page=0",
+      "method": "GET",
+      "url": "{{ base_url }}/produtos-servicos?size=10&page=0"
+    },
+    {
+      "_id": "req_detalhar_produto",
+      "_type": "request",
+      "parentId": "wrk_desafioii",
+      "name": "GET /produtos-servicos/{produto_id}",
+      "method": "GET",
+      "url": "{{ base_url }}/produtos-servicos/{{ produto_id }}"
+    },
+    {
+      "_id": "req_atualizar_produto",
+      "_type": "request",
+      "parentId": "wrk_desafioii",
+      "name": "PUT /produtos-servicos/{produto_id}",
+      "method": "PUT",
+      "url": "{{ base_url }}/produtos-servicos/{{ produto_id }}",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"nome\": \"Notebook Pro\",\n  \"preco\": 3200,\n  \"tipo\": \"PRODUTO\",\n  \"ativo\": true\n}"
+      }
+    },
+    {
+      "_id": "req_excluir_produto",
+      "_type": "request",
+      "parentId": "wrk_desafioii",
+      "name": "DELETE /produtos-servicos/{produto_id}",
+      "method": "DELETE",
+      "url": "{{ base_url }}/produtos-servicos/{{ produto_id }}"
+    },
+
+    {
+      "_id": "req_criar_pedido",
+      "_type": "request",
+      "parentId": "wrk_desafioii",
+      "name": "POST /pedidos",
+      "method": "POST",
+      "url": "{{ base_url }}/pedidos"
+    },
+    {
+      "_id": "req_listar_pedidos",
+      "_type": "request",
+      "parentId": "wrk_desafioii",
+      "name": "GET /pedidos?size=10&page=0",
+      "method": "GET",
+      "url": "{{ base_url }}/pedidos?size=10&page=0"
+    },
+    {
+      "_id": "req_detalhar_pedido",
+      "_type": "request",
+      "parentId": "wrk_desafioii",
+      "name": "GET /pedidos/{pedido_id}",
+      "method": "GET",
+      "url": "{{ base_url }}/pedidos/{{ pedido_id }}"
+    },
+    {
+      "_id": "req_adicionar_item",
+      "_type": "request",
+      "parentId": "wrk_desafioii",
+      "name": "POST /pedidos/{pedido_id}/itens",
+      "method": "POST",
+      "url": "{{ base_url }}/pedidos/{{ pedido_id }}/itens",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"produtoServicoId\": \"{{ produto_id }}\",\n  \"quantidade\": 1\n}"
+      }
+    },
+    {
+      "_id": "req_atualizar_item",
+      "_type": "request",
+      "parentId": "wrk_desafioii",
+      "name": "PUT /pedidos/{pedido_id}/itens/{item_id}",
+      "method": "PUT",
+      "url": "{{ base_url }}/pedidos/{{ pedido_id }}/itens/{{ item_id }}",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"quantidade\": 2\n}"
+      }
+    },
+    {
+      "_id": "req_remover_item",
+      "_type": "request",
+      "parentId": "wrk_desafioii",
+      "name": "DELETE /pedidos/{pedido_id}/itens/{item_id}",
+      "method": "DELETE",
+      "url": "{{ base_url }}/pedidos/{{ pedido_id }}/itens/{{ item_id }}"
+    },
+    {
+      "_id": "req_aplicar_desconto",
+      "_type": "request",
+      "parentId": "wrk_desafioii",
+      "name": "POST /pedidos/{pedido_id}/desconto?percentual=10",
+      "method": "POST",
+      "url": "{{ base_url }}/pedidos/{{ pedido_id }}/desconto?percentual=10"
+    },
+    {
+      "_id": "req_fechar_pedido",
+      "_type": "request",
+      "parentId": "wrk_desafioii",
+      "name": "POST /pedidos/{pedido_id}/fechar",
+      "method": "POST",
+      "url": "{{ base_url }}/pedidos/{{ pedido_id }}/fechar"
+    }
+  ]
+}

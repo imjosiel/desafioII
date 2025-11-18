@@ -1,0 +1,50 @@
+@baseUrl = http://localhost:8080
+
+### Criar produto (Notebook)
+POST {{baseUrl}}/produtos-servicos
+Content-Type: application/json
+
+{
+  "nome": "Notebook",
+  "preco": 3000,
+  "tipo": "PRODUTO",
+  "ativo": true
+}
+
+### Criar serviço (Suporte)
+POST {{baseUrl}}/produtos-servicos
+Content-Type: application/json
+
+{
+  "nome": "Suporte",
+  "preco": 200,
+  "tipo": "SERVICO",
+  "ativo": true
+}
+
+### Criar pedido
+POST {{baseUrl}}/pedidos
+
+### Adicionar item (Notebook x1)
+POST {{baseUrl}}/pedidos/{{pedidoId}}/itens
+Content-Type: application/json
+
+{
+  "produtoServicoId": "{{prodId}}",
+  "quantidade": 1
+}
+
+### Adicionar item (Suporte x2)
+POST {{baseUrl}}/pedidos/{{pedidoId}}/itens
+Content-Type: application/json
+
+{
+  "produtoServicoId": "{{servId}}",
+  "quantidade": 2
+}
+
+### Aplicar desconto de 10%
+POST {{baseUrl}}/pedidos/{{pedidoId}}/desconto?percentual=10
+
+### Ver pedido
+GET {{baseUrl}}/pedidos/{{pedidoId}}
